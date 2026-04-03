@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Operacional | Ita Setup V2</title>
+    <style>
+        :root { --bg-color: #080808; --surface-color: #121212; --primary-gold: #D4AF37; --text-main: #f2f2f2; --text-muted: #666666; --border-color: #2a2a2a; --danger: #ff3333; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; padding: 2rem 1rem; }
+        .container { background-color: var(--surface-color); width: 100%; max-width: 650px; padding: 2rem; border-radius: 16px; border: 1px solid var(--border-color); }
+        h1 { color: var(--primary-gold); text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 2rem; flex-wrap: wrap; background: #0a0a0a; padding: 15px; border-radius: 10px; }
+        input, select { flex: 1; min-width: 150px; padding: 12px; background: var(--surface-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; }
+        button.btn-add { background: var(--primary-gold); color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .category-title { color: var(--primary-gold); font-size: 1rem; text-transform: uppercase; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid var(--primary-gold); display: inline-block; }
+        .item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .checkbox-custom { width: 20px; height: 20px; border: 2px solid var(--primary-gold); border-radius: 4px; cursor: pointer; }
+        .item.checked { opacity: 0.4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Holding Setup</h1>
+        <form class="input-group" id="setup-form">
+            <input type="text" id="item-name" placeholder="Ex: Gelo, Vodka..." required>
+            <select id="item-category">
+                <option value="🍹 Insumos & Bebidas">🍹 Insumos & Bebidas</option>
+                <option value="🍸 Vidraria & Balcão">🍸 Vidraria & Balcão</option>
+                <option value="🪑 Infra & Mesas">🪑 Infra & Mesas</option>
+                <option value="🛡️ Staff & Segurança">🛡️ Staff & Segurança</option>
+                <option value="💸 Caixa & Financeiro">💸 Caixa & Financeiro</option>
+            </select>
+            <button type="submit" class="btn-add">OK</button>
+        </form>
+        <div id="list-container"></div>
+    </div>
+    <script>
+        const form = document.getElementById('setup-form');
+        const listContainer = document.getElementById('list-container');
+        let items = JSON.parse(localStorage.getItem('barSetupV2')) || [];
+        function render() {
+            listContainer.innerHTML = '';
+            const cats = [...new Set(items.map(i => i.category))];
+            cats.forEach(c => {
+                const div = document.createElement('div');
+                div.innerHTML = `<h2 class="category-title">${c}</h2>`;
+                const ul = document.createElement('ul'); ul.className = 'item-list';
+                items.filter(i => i.category === c).forEach((item, idx) => {
+                    const li = document.createElement('li'); li.className = `item ${item.checked ? 'checked' : ''}`;
+                    li.innerHTML = `<div onclick="t(${items.indexOf(item)})"><span>${item.name}</span></div><button onclick="d(${items.indexOf(item)})">✖</button>`;
+                    ul.appendChild(li);
+                });
+                div.appendChild(ul); listContainer.appendChild(div);
+            });
+        }
+        form.onsubmit = e => { e.preventDefault(); items.push({name: document.getElementById('item-name').value, category: document.getElementById('item-category').value, checked: false}); document.getElementById('item-name').value=''; save(); };
+        window.t = i => { items[i].checked = !items[i].checked; save(); };
+        window.d = i => { items.splice(i, 1); save(); };
+        function save() { localStorage.setItem('barSetupV2', JSON.stringify(items)); render(); }
+        render();
+    </script>
+</body>
+</html>
