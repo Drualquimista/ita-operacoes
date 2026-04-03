@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holding Vault | Sincronizado</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <title>Holding Vault | Modo Fortaleza</title>
     <style>
         :root { --bg-color: #050505; --surface: #111; --gold: #D4AF37; --text: #eee; --border: #222; }
-        body { background: var(--bg-color); color: var(--text); font-family: sans-serif; display: flex; justify-content: center; margin: 0; min-height: 100vh; }
+        body { background: var(--bg-color); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; margin: 0; min-height: 100vh; }
         .container { width: 100%; max-width: 500px; padding: 20px; display: none; }
         #login { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100vh; padding: 20px; box-sizing: border-box; }
-        input, select { background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; text-align: center; font-size: 1.1rem; }
-        button { background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 1rem; }
-        .category-title { color: var(--gold); font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid var(--gold); margin: 20px 0 10px; padding-bottom: 5px; }
+        input, select { background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 8px; margin-bottom: 12px; width: 100%; box-sizing: border-box; text-align: center; font-size: 1.1rem; }
+        button { background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 1rem; transition: background 0.3s; }
+        button:hover { background: #b5952f; }
+        .category-title { color: var(--gold); font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid var(--gold); margin: 25px 0 10px; padding-bottom: 5px; }
         .item { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); cursor: pointer; }
         .checked { opacity: 0.4; text-decoration: line-through; border-color: var(--gold); }
-        .status-cloud { font-size: 0.7rem; text-align: center; color: #555; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .status-badge { font-size: 0.75rem; text-align: center; color: #D4AF37; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; background: rgba(212, 175, 55, 0.1); padding: 5px; border-radius: 4px;}
     </style>
 </head>
 <body>
@@ -23,88 +23,67 @@
     <div id="login">
         <h1 style="color: var(--gold); letter-spacing: 3px; text-align: center; margin-bottom: 30px;">HOLDING VAULT</h1>
         <input type="password" id="passkey" placeholder="Código de Acesso">
-        <button onclick="unlock()">ENTRAR E SINCRONIZAR</button>
-        <p id="error-msg" style="color: #ff3333; display: none; margin-top: 15px; font-size: 0.9rem;">Código incorreto. Tente novamente.</p>
+        <button onclick="unlock()">DESTRAVAR SISTEMA</button>
+        <p id="error-msg" style="color: #ff3333; display: none; margin-top: 15px; font-size: 0.9rem;">Chave Inválida.</p>
     </div>
 
     <div class="container" id="app">
-        <h2 style="text-align: center; color: var(--gold); text-transform: uppercase; margin-bottom: 5px;">Setup Partilhado</h2>
-        <div id="status" class="status-cloud">Conectado à Nuvem Segura</div>
+        <h2 style="text-align: center; color: var(--gold); text-transform: uppercase; margin-bottom: 5px;">Painel de Operações</h2>
+        <div class="status-badge">🟢 Banco de Dados Ativo</div>
         
         <form id="add-form" style="margin-top: 25px;">
-            <input type="text" id="name" placeholder="Item (ex: Gin, Gelo, Caixa...)" required style="text-align: left;">
+            <input type="text" id="name" placeholder="Item (ex: Whisky, Gelo, Caixa...)" required style="text-align: left;">
             <select id="cat" style="text-align: left;">
                 <option value="🍹 Insumos & Bebidas">🍹 Insumos & Bebidas</option>
                 <option value="🍸 Vidraria & Balcão">🍸 Vidraria & Balcão</option>
                 <option value="🛡️ Staff & Segurança">🛡️ Staff & Segurança</option>
                 <option value="💸 Caixa & Financeiro">💸 Caixa & Financeiro</option>
             </select>
-            <button type="submit" style="margin-top: 10px;">ADICIONAR AO CLOUD</button>
+            <button type="submit" style="margin-top: 10px;">ADICIONAR ITEM</button>
         </form>
 
         <div id="list" style="margin-top: 20px;"></div>
-        <button onclick="syncData()" style="margin-top: 30px; background: #222; color: #fff; border: 1px solid #333;">ATUALIZAR AGORA 🔄</button>
     </div>
 
     <script>
-        let VAULT_KEY = "";
-        const CLOUD_URL = "https://keyvalue.xyz/v1/ita-dru-holding-v1"; // Túnel de Sincronização
+        // Carrega o Banco de Dados Local IMEDIATAMENTE
+        let currentItems = JSON.parse(localStorage.getItem('holding_vault_db')) || [];
 
-        async function unlock() {
+        function unlock() {
             const pin = document.getElementById('passkey').value;
-            // A SENHA É 1966
             if(pin === "1966") {
-                VAULT_KEY = pin;
                 document.getElementById('login').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                await syncData();
-                // Sincronização Automática a cada 10 segundos
-                setInterval(syncData, 10000);
+                render(currentItems);
             } else { 
                 document.getElementById('error-msg').style.display = 'block';
             }
         }
 
-        // Criptografar e Enviar para a Nuvem
-        async function saveToCloud(data) {
-            const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), VAULT_KEY).toString();
-            await fetch(CLOUD_URL, { method: 'POST', body: encrypted });
-            document.getElementById('status').innerText = "Sincronizado: " + new Date().toLocaleTimeString();
-        }
-
-        // Descriptografar e Baixar da Nuvem
-        async function syncData() {
-            try {
-                const response = await fetch(CLOUD_URL);
-                const encryptedData = await response.text();
-                if(encryptedData) {
-                    const bytes = CryptoJS.AES.decrypt(encryptedData, VAULT_KEY);
-                    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-                    render(decrypted);
-                }
-            } catch(e) { console.log("Vault novo ou vazio."); }
-        }
-
+        // Função que desenha os itens na tela
         function render(items) {
             const listDiv = document.getElementById('list');
             listDiv.innerHTML = '';
+            
             const cats = [...new Set(items.map(i => i.category))];
+            
             cats.forEach(c => {
                 const html = `<div class="category-title">${c}</div>`;
                 listDiv.insertAdjacentHTML('beforeend', html);
-                items.filter(i => i.category === c).forEach((item, idx) => {
+                
+                items.filter(i => i.category === c).forEach((item) => {
                     const itemHtml = `
                     <div class="item ${item.checked ? 'checked' : ''}" onclick="toggleItem('${item.id}')">
-                        <span style="flex: 1;">${item.name}</span>
-                        <button onclick="deleteItem('${item.id}'); event.stopPropagation();" style="width:auto; background:none; color:#ff3333; padding: 5px 10px; font-size: 1.2rem;">✖</button>
+                        <span style="flex: 1; font-weight: 500;">${item.name}</span>
+                        <button onclick="deleteItem('${item.id}'); event.stopPropagation();" style="width:auto; background:none; color:#ff3333; padding: 5px 15px; font-size: 1.2rem; border: none; cursor: pointer;">✖</button>
                     </div>`;
                     listDiv.insertAdjacentHTML('beforeend', itemHtml);
                 });
             });
-            window.currentItems = items;
         }
 
-        document.getElementById('add-form').onsubmit = async (e) => {
+        // Salva e Renderiza Imediatamente
+        document.getElementById('add-form').onsubmit = (e) => {
             e.preventDefault();
             const newItem = {
                 id: Date.now().toString(),
@@ -112,23 +91,25 @@
                 category: document.getElementById('cat').value,
                 checked: false
             };
-            const list = window.currentItems || [];
-            list.push(newItem);
-            await saveToCloud(list);
-            render(list);
-            document.getElementById('name').value = '';
+            
+            currentItems.push(newItem);
+            localStorage.setItem('holding_vault_db', JSON.stringify(currentItems)); // Salva no cofre do celular
+            render(currentItems); // Aparece na tela instantaneamente
+            document.getElementById('name').value = ''; // Limpa o campo
         };
 
-        window.toggleItem = async (id) => {
-            const list = window.currentItems.map(i => i.id === id ? {...i, checked: !i.checked} : i);
-            await saveToCloud(list);
-            render(list);
+        // Marcar como "OK"
+        window.toggleItem = (id) => {
+            currentItems = currentItems.map(i => i.id === id ? {...i, checked: !i.checked} : i);
+            localStorage.setItem('holding_vault_db', JSON.stringify(currentItems));
+            render(currentItems);
         };
 
-        window.deleteItem = async (id) => {
-            const list = window.currentItems.filter(i => i.id !== id);
-            await saveToCloud(list);
-            render(list);
+        // Deletar item
+        window.deleteItem = (id) => {
+            currentItems = currentItems.filter(i => i.id !== id);
+            localStorage.setItem('holding_vault_db', JSON.stringify(currentItems));
+            render(currentItems);
         };
     </script>
 </body>
