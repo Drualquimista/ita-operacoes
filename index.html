@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holding Vault | Modo Fortaleza</title>
+    <title>Holding Vault | Nuvem Assíncrona</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root { --bg-color: #050505; --surface: #111; --gold: #D4AF37; --text: #eee; --border: #222; }
         body { background: var(--bg-color); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; margin: 0; min-height: 100vh; }
         .container { width: 100%; max-width: 500px; padding: 20px; display: none; }
         #login { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100vh; padding: 20px; box-sizing: border-box; }
         input, select { background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 8px; margin-bottom: 12px; width: 100%; box-sizing: border-box; text-align: center; font-size: 1.1rem; }
-        button { background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 1rem; transition: background 0.3s; }
-        button:hover { background: #b5952f; }
+        button { background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 1rem; }
         .category-title { color: var(--gold); font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid var(--gold); margin: 25px 0 10px; padding-bottom: 5px; }
         .item { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); cursor: pointer; }
         .checked { opacity: 0.4; text-decoration: line-through; border-color: var(--gold); }
@@ -22,17 +22,17 @@
 
     <div id="login">
         <h1 style="color: var(--gold); letter-spacing: 3px; text-align: center; margin-bottom: 30px;">HOLDING VAULT</h1>
-        <input type="password" id="passkey" placeholder="Código de Acesso">
+        <input type="password" id="passkey" placeholder="Código: 1966">
         <button onclick="unlock()">DESTRAVAR SISTEMA</button>
         <p id="error-msg" style="color: #ff3333; display: none; margin-top: 15px; font-size: 0.9rem;">Chave Inválida.</p>
     </div>
 
     <div class="container" id="app">
         <h2 style="text-align: center; color: var(--gold); text-transform: uppercase; margin-bottom: 5px;">Painel de Operações</h2>
-        <div class="status-badge">🟢 Banco de Dados Ativo</div>
+        <div id="status-ui" class="status-badge">🟡 Iniciando...</div>
         
         <form id="add-form" style="margin-top: 25px;">
-            <input type="text" id="name" placeholder="Item (ex: Whisky, Gelo, Caixa...)" required style="text-align: left;">
+            <input type="text" id="name" placeholder="Item (ex: Whisky, Gelo...)" required style="text-align: left;">
             <select id="cat" style="text-align: left;">
                 <option value="🍹 Insumos & Bebidas">🍹 Insumos & Bebidas</option>
                 <option value="🍸 Vidraria & Balcão">🍸 Vidraria & Balcão</option>
@@ -46,25 +46,65 @@
     </div>
 
     <script>
-        // Carrega o Banco de Dados Local IMEDIATAMENTE
-        let currentItems = JSON.parse(localStorage.getItem('holding_vault_db')) || [];
+        let VAULT_KEY = "";
+        const CLOUD_URL = "https://keyvalue.xyz/v1/ita-dru-holding-v1"; 
+        
+        // Puxa o backup do celular primeiro para NUNCA travar
+        let currentItems = JSON.parse(localStorage.getItem('vault_db_backup')) || [];
 
         function unlock() {
             const pin = document.getElementById('passkey').value;
             if(pin === "1966") {
+                VAULT_KEY = pin;
                 document.getElementById('login').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                render(currentItems);
+                render(currentItems); // Mostra o que já tem salvo no celular
+                syncData(); // Tenta puxar da nuvem em silêncio
             } else { 
                 document.getElementById('error-msg').style.display = 'block';
             }
         }
 
-        // Função que desenha os itens na tela
+        // Tenta mandar pra nuvem SEM travar a tela
+        function pushToCloud(data) {
+            try {
+                const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), VAULT_KEY).toString();
+                // O .catch no final ignora o erro se a nuvem barrar
+                fetch(CLOUD_URL, { method: 'POST', body: encrypted }).then(() => {
+                    document.getElementById('status-ui').innerText = "🟢 Nuvem OK";
+                    document.getElementById('status-ui').style.color = "#4caf50";
+                }).catch(() => {
+                    document.getElementById('status-ui').innerText = "🟡 Modo Local (Nuvem Falhou)";
+                    document.getElementById('status-ui').style.color = "#D4AF37";
+                });
+            } catch (e) { console.log("Erro de criptografia."); }
+        }
+
+        // Tenta puxar da nuvem em silêncio
+        async function syncData() {
+            try {
+                const response = await fetch(CLOUD_URL);
+                if(response.ok) {
+                    const encryptedData = await response.text();
+                    const bytes = CryptoJS.AES.decrypt(encryptedData, VAULT_KEY);
+                    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+                    if(decrypted && decrypted.length > 0) {
+                        currentItems = decrypted;
+                        localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
+                        render(currentItems);
+                        document.getElementById('status-ui').innerText = "🟢 Sincronizado";
+                        document.getElementById('status-ui').style.color = "#4caf50";
+                    }
+                }
+            } catch(e) { 
+                document.getElementById('status-ui').innerText = "🟡 Nuvem Fora do Ar (Operando Local)"; 
+                document.getElementById('status-ui').style.color = "#D4AF37";
+            }
+        }
+
         function render(items) {
             const listDiv = document.getElementById('list');
             listDiv.innerHTML = '';
-            
             const cats = [...new Set(items.map(i => i.category))];
             
             cats.forEach(c => {
@@ -82,7 +122,6 @@
             });
         }
 
-        // Salva e Renderiza Imediatamente
         document.getElementById('add-form').onsubmit = (e) => {
             e.preventDefault();
             const newItem = {
@@ -92,24 +131,32 @@
                 checked: false
             };
             
+            // 1. Salva no array
             currentItems.push(newItem);
-            localStorage.setItem('holding_vault_db', JSON.stringify(currentItems)); // Salva no cofre do celular
-            render(currentItems); // Aparece na tela instantaneamente
-            document.getElementById('name').value = ''; // Limpa o campo
+            
+            // 2. Salva no celular imediatamente (Backup)
+            localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
+            
+            // 3. Atualiza a tela em 1 milissegundo
+            render(currentItems);
+            document.getElementById('name').value = '';
+            
+            // 4. Tenta mandar pra nuvem em segundo plano
+            pushToCloud(currentItems);
         };
 
-        // Marcar como "OK"
         window.toggleItem = (id) => {
             currentItems = currentItems.map(i => i.id === id ? {...i, checked: !i.checked} : i);
-            localStorage.setItem('holding_vault_db', JSON.stringify(currentItems));
+            localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
             render(currentItems);
+            pushToCloud(currentItems);
         };
 
-        // Deletar item
         window.deleteItem = (id) => {
             currentItems = currentItems.filter(i => i.id !== id);
-            localStorage.setItem('holding_vault_db', JSON.stringify(currentItems));
+            localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
             render(currentItems);
+            pushToCloud(currentItems);
         };
     </script>
 </body>
