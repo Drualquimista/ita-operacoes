@@ -3,57 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holding | Termux Sync</title>
+    <title>Holding App | PDV</title>
     <style>
-        :root { --bg: #050505; --gold: #D4AF37; --text: #eee; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
-        input, select, button { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; }
-        input, select { background: #111; color: #fff; border: 1px solid #333; }
-        button { background: var(--gold); color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
-        .item { background: #111; padding: 15px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .del { background: transparent; color: #ff3333; width: auto; padding: 5px 15px; margin: 0; font-size: 1.2rem; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        :root {
+            --bg: #09090b; --surface: #18181b; --border: #27272a;
+            --gold: #D4AF37; --gold-hover: #b5952f;
+            --text: #f4f4f5; --text-muted: #a1a1aa;
+            --danger: #ef4444; --success: #22c55e;
+        }
+
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif; margin: 0; padding: 15px;
+            padding-bottom: 80px; /* Espaço pro scroll */
+        }
+
+        .container { max-width: 500px; margin: auto; }
+
+        /* Cabeçalho e Status */
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--gold); font-weight: 800; font-size: 1.5rem; margin: 0; letter-spacing: 1px; text-transform: uppercase; }
+        #status { font-size: 0.75rem; margin-top: 5px; font-weight: 600; display: inline-block; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.1); }
+
+        /* Dashboard Cards */
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .dash-card { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; }
+        .dash-card span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .dash-card h2 { margin: 5px 0 0 0; font-size: 1.4rem; color: var(--gold); }
+
+        /* Formulário de Cadastro */
+        .form-section { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .form-section h3 { margin-top: 0; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+        
+        .input-group { margin-bottom: 12px; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
+        input, select { 
+            width: 100%; padding: 12px; background: var(--bg); color: var(--text); 
+            border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-family: 'Inter', sans-serif;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--gold); }
+        
+        button { 
+            width: 100%; padding: 14px; background: var(--gold); color: #000; 
+            font-weight: 800; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; 
+        }
+        button:active { background: var(--gold-hover); transform: scale(0.98); }
+
+        /* Lista de Estoque */
+        .item-card { 
+            background: var(--surface); border: 1px solid var(--border); padding: 15px; 
+            border-radius: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .item-card.zerado { opacity: 0.5; border-color: var(--danger); }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .item-title { font-weight: 600; font-size: 1.1rem; margin: 0; }
+        .item-cat { font-size: 0.75rem; color: var(--text-muted); }
+        .item-price { font-weight: 800; color: var(--success); }
+        
+        .item-actions { display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 8px; border-radius: 8px; }
+        .qty-controls { display: flex; align-items: center; gap: 15px; }
+        .btn-icon { background: var(--border); color: var(--text); width: 35px; height: 35px; border-radius: 8px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; padding: 0; }
+        .qty-number { font-weight: 800; font-size: 1.1rem; min-width: 25px; text-align: center; }
+        .btn-del { background: transparent; color: var(--danger); font-size: 0.8rem; text-transform: uppercase; padding: 5px 10px; width: auto; }
     </style>
 </head>
 <body>
-    <h2 style="color: var(--gold); text-align: center; letter-spacing: 2px;">HOLDING OPERAÇÕES</h2>
-    <div id="status" style="text-align: center; color: #D4AF37; font-size: 0.8rem; margin-bottom: 20px;">Sincronizando com Termux...</div>
+    <div class="container">
+        <header>
+            <h1>BAR | OPERAÇÕES</h1>
+            <div id="status">Conectando...</div>
+        </header>
 
-    <form id="form">
-        <input type="text" id="nome" placeholder="Ex: Whisky, Gelo, Copos..." required>
-        <select id="cat">
-            <option>🍹 Insumos & Bebidas</option>
-            <option>🍸 Vidraria & Balcão</option>
-            <option>💸 Caixa & Financeiro</option>
-            <option>🛡️ Staff & Segurança</option>
-        </select>
-        <button type="submit">ADICIONAR ITEM</button>
-    </form>
-    <div id="lista" style="margin-top: 20px;"></div>
+        <div class="dash-grid">
+            <div class="dash-card">
+                <span>Total de Itens</span>
+                <h2 id="dash-qtd">0</h2>
+            </div>
+            <div class="dash-card">
+                <span>Valor em Estoque</span>
+                <h2 id="dash-valor">R$ 0,00</h2>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>+ Adicionar ao Estoque</h3>
+            <form id="form">
+                <div class="input-group">
+                    <label>Produto / Bebida</label>
+                    <input type="text" id="nome" placeholder="Ex: Lata de Heineken" required>
+                </div>
+                <div class="input-group">
+                    <label>Categoria</label>
+                    <select id="cat">
+                        <option>🍻 Cervejas</option>
+                        <option>🍹 Destilados & Drinks</option>
+                        <option>🧊 Insumos (Gelo, Limão)</option>
+                        <option>💸 Outros</option>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Preço de Venda (R$)</label>
+                        <input type="number" id="preco" step="0.01" placeholder="10.00" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Quantidade</label>
+                        <input type="number" id="qtd" placeholder="Ex: 12" required>
+                    </div>
+                </div>
+                <button type="submit">SALVAR PRODUTO</button>
+            </form>
+        </div>
+
+        <div style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <h3 style="margin: 0; font-size: 1rem;">📦 Estoque Atual</h3>
+        </div>
+        <div id="lista"></div>
+    </div>
 
     <script>
-        // O SEU LINK JÁ ESTÁ AQUI, NÃO MEXA EM NADA
-        const API_URL = "https://008635efaaab1e.lhr.life/sync";
-
+        // ======= O SEU NOVO LINK DO TERMUX JÁ ESTÁ AQUI =======
+        const API_URL = "https://d9de824738f218.lhr.life/sync";
+        
         let dados = [];
+
+        function formatarDinheiro(valor) {
+            return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
 
         async function sincronizar() {
             try {
                 let res = await fetch(API_URL);
                 if(res.ok) {
-                    dados = await res.json();
-                    renderizar();
-                    document.getElementById('status').innerText = "🟢 Sincronizado com Termux do Dru";
-                    document.getElementById('status').style.color = "#4caf50";
+                    let serverData = await res.json();
+                    // Atualiza a tela só se houver mudança pra não piscar os botões
+                    if(JSON.stringify(dados) !== JSON.stringify(serverData)) {
+                        dados = serverData;
+                        renderizar();
+                    }
+                    setStatus("🟢 Sincronizado", "#22c55e", "rgba(34, 197, 94, 0.1)");
                 }
             } catch(e) {
-                document.getElementById('status').innerText = "🔴 Tentando conectar com Termux...";
-                document.getElementById('status').style.color = "#ff3333";
+                setStatus("🔴 Tentando conectar...", "#ef4444", "rgba(239, 68, 68, 0.1)");
             }
         }
 
-        async function salvarEEnviar(novosDados) {
-            dados = novosDados;
-            renderizar(); 
+        function setStatus(texto, cor, bg) {
+            const st = document.getElementById('status');
+            st.innerText = texto; st.style.color = cor; st.style.backgroundColor = bg;
+        }
+
+        async function salvarEEnviar() {
+            renderizar(); // Atualiza a tela na hora pro usuário
             try {
                 await fetch(API_URL, {
                     method: 'POST',
@@ -63,35 +167,92 @@
             } catch(e) {}
         }
 
+        function atualizarDashboard() {
+            let totalQtd = 0;
+            let totalValor = 0;
+            dados.forEach(item => {
+                let q = Number(item.qtd) || 0;
+                let p = Number(item.preco) || 0;
+                totalQtd += q;
+                totalValor += (q * p);
+            });
+            document.getElementById('dash-qtd').innerText = totalQtd;
+            document.getElementById('dash-valor').innerText = formatarDinheiro(totalValor);
+        }
+
         function renderizar() {
+            atualizarDashboard();
             const div = document.getElementById('lista');
             div.innerHTML = '';
+            
+            if(dados.length === 0) {
+                div.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.9rem;">O estoque está vazio.</p>';
+                return;
+            }
+
             dados.forEach((item, index) => {
+                // Compatibilidade com itens antigos que não tem preço/qtd
+                let preco = item.preco ? formatarDinheiro(item.preco) : "R$ 0,00";
+                let qtd = item.qtd || 0;
+                let zerado = qtd <= 0 ? 'zerado' : '';
+
                 div.innerHTML += `
-                    <div class="item">
-                        <span style="flex:1;"><b>${item.cat}</b><br>${item.nome}</span>
-                        <button class="del" onclick="deletar(${index})">✖</button>
+                    <div class="item-card ${zerado}">
+                        <div class="item-header">
+                            <div>
+                                <p class="item-title">${item.nome}</p>
+                                <span class="item-cat">${item.cat}</span>
+                            </div>
+                            <span class="item-price">${preco}</span>
+                        </div>
+                        <div class="item-actions">
+                            <div class="qty-controls">
+                                <button class="btn-icon" onclick="alterarQtd(${index}, -1)">-</button>
+                                <span class="qty-number">${qtd}</span>
+                                <button class="btn-icon" onclick="alterarQtd(${index}, 1)">+</button>
+                            </div>
+                            <button class="btn-del" onclick="deletar(${index})">Excluir</button>
+                        </div>
                     </div>
                 `;
             });
         }
 
+        window.alterarQtd = (index, valor) => {
+            let atual = Number(dados[index].qtd) || 0;
+            let novaQtd = atual + valor;
+            if (novaQtd < 0) novaQtd = 0; // Não deixa ficar negativo
+            dados[index].qtd = novaQtd;
+            salvarEEnviar();
+        };
+
         document.getElementById('form').onsubmit = (e) => {
             e.preventDefault();
             let novo = {
                 nome: document.getElementById('nome').value,
-                cat: document.getElementById('cat').value
+                cat: document.getElementById('cat').value,
+                preco: document.getElementById('preco').value,
+                qtd: document.getElementById('qtd').value
             };
-            let novosDados = [...dados, novo];
+            dados.push(novo);
+            
+            // Limpa o formulário
             document.getElementById('nome').value = '';
-            salvarEEnviar(novosDados);
+            document.getElementById('preco').value = '';
+            document.getElementById('qtd').value = '';
+            document.getElementById('nome').focus();
+            
+            salvarEEnviar();
         };
 
         window.deletar = (index) => {
-            let novosDados = dados.filter((_, i) => i !== index);
-            salvarEEnviar(novosDados);
+            if(confirm("Tem certeza que quer apagar este item?")) {
+                dados.splice(index, 1);
+                salvarEEnviar();
+            }
         };
 
+        // Atualiza a tela a cada 3 segundos
         setInterval(sincronizar, 3000);
         sincronizar();
     </script>
