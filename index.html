@@ -3,161 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holding Vault | Nuvem Assíncrona</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <title>Holding | Termux Sync</title>
     <style>
-        :root { --bg-color: #050505; --surface: #111; --gold: #D4AF37; --text: #eee; --border: #222; }
-        body { background: var(--bg-color); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; margin: 0; min-height: 100vh; }
-        .container { width: 100%; max-width: 500px; padding: 20px; display: none; }
-        #login { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100vh; padding: 20px; box-sizing: border-box; }
-        input, select { background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 8px; margin-bottom: 12px; width: 100%; box-sizing: border-box; text-align: center; font-size: 1.1rem; }
-        button { background: var(--gold); color: #000; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 1rem; }
-        .category-title { color: var(--gold); font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid var(--gold); margin: 25px 0 10px; padding-bottom: 5px; }
-        .item { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); cursor: pointer; }
-        .checked { opacity: 0.4; text-decoration: line-through; border-color: var(--gold); }
-        .status-badge { font-size: 0.75rem; text-align: center; color: #D4AF37; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; background: rgba(212, 175, 55, 0.1); padding: 5px; border-radius: 4px;}
+        :root { --bg: #050505; --gold: #D4AF37; --text: #eee; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+        input, select, button { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; }
+        input, select { background: #111; color: #fff; border: 1px solid #333; }
+        button { background: var(--gold); color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
+        .item { background: #111; padding: 15px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .del { background: transparent; color: #ff3333; width: auto; padding: 5px 15px; margin: 0; font-size: 1.2rem; }
     </style>
 </head>
 <body>
+    <h2 style="color: var(--gold); text-align: center; letter-spacing: 2px;">HOLDING OPERAÇÕES</h2>
+    <div id="status" style="text-align: center; color: #D4AF37; font-size: 0.8rem; margin-bottom: 20px;">Sincronizando com Termux...</div>
 
-    <div id="login">
-        <h1 style="color: var(--gold); letter-spacing: 3px; text-align: center; margin-bottom: 30px;">HOLDING VAULT</h1>
-        <input type="password" id="passkey" placeholder="Código: 1966">
-        <button onclick="unlock()">DESTRAVAR SISTEMA</button>
-        <p id="error-msg" style="color: #ff3333; display: none; margin-top: 15px; font-size: 0.9rem;">Chave Inválida.</p>
-    </div>
-
-    <div class="container" id="app">
-        <h2 style="text-align: center; color: var(--gold); text-transform: uppercase; margin-bottom: 5px;">Painel de Operações</h2>
-        <div id="status-ui" class="status-badge">🟡 Iniciando...</div>
-        
-        <form id="add-form" style="margin-top: 25px;">
-            <input type="text" id="name" placeholder="Item (ex: Whisky, Gelo...)" required style="text-align: left;">
-            <select id="cat" style="text-align: left;">
-                <option value="🍹 Insumos & Bebidas">🍹 Insumos & Bebidas</option>
-                <option value="🍸 Vidraria & Balcão">🍸 Vidraria & Balcão</option>
-                <option value="🛡️ Staff & Segurança">🛡️ Staff & Segurança</option>
-                <option value="💸 Caixa & Financeiro">💸 Caixa & Financeiro</option>
-            </select>
-            <button type="submit" style="margin-top: 10px;">ADICIONAR ITEM</button>
-        </form>
-
-        <div id="list" style="margin-top: 20px;"></div>
-    </div>
+    <form id="form">
+        <input type="text" id="nome" placeholder="Ex: Whisky, Gelo, Copos..." required>
+        <select id="cat">
+            <option>🍹 Insumos & Bebidas</option>
+            <option>🍸 Vidraria & Balcão</option>
+            <option>💸 Caixa & Financeiro</option>
+            <option>🛡️ Staff & Segurança</option>
+        </select>
+        <button type="submit">ADICIONAR ITEM</button>
+    </form>
+    <div id="lista" style="margin-top: 20px;"></div>
 
     <script>
-        let VAULT_KEY = "";
-        const CLOUD_URL = "https://keyvalue.xyz/v1/ita-dru-holding-v1"; 
-        
-        // Puxa o backup do celular primeiro para NUNCA travar
-        let currentItems = JSON.parse(localStorage.getItem('vault_db_backup')) || [];
+        // O SEU LINK JÁ ESTÁ AQUI, NÃO MEXA EM NADA
+        const API_URL = "https://1e647256767f51.lhr.life/sync";
 
-        function unlock() {
-            const pin = document.getElementById('passkey').value;
-            if(pin === "1966") {
-                VAULT_KEY = pin;
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                render(currentItems); // Mostra o que já tem salvo no celular
-                syncData(); // Tenta puxar da nuvem em silêncio
-            } else { 
-                document.getElementById('error-msg').style.display = 'block';
-            }
-        }
+        let dados = [];
 
-        // Tenta mandar pra nuvem SEM travar a tela
-        function pushToCloud(data) {
+        async function sincronizar() {
             try {
-                const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), VAULT_KEY).toString();
-                // O .catch no final ignora o erro se a nuvem barrar
-                fetch(CLOUD_URL, { method: 'POST', body: encrypted }).then(() => {
-                    document.getElementById('status-ui').innerText = "🟢 Nuvem OK";
-                    document.getElementById('status-ui').style.color = "#4caf50";
-                }).catch(() => {
-                    document.getElementById('status-ui').innerText = "🟡 Modo Local (Nuvem Falhou)";
-                    document.getElementById('status-ui').style.color = "#D4AF37";
-                });
-            } catch (e) { console.log("Erro de criptografia."); }
-        }
-
-        // Tenta puxar da nuvem em silêncio
-        async function syncData() {
-            try {
-                const response = await fetch(CLOUD_URL);
-                if(response.ok) {
-                    const encryptedData = await response.text();
-                    const bytes = CryptoJS.AES.decrypt(encryptedData, VAULT_KEY);
-                    const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-                    if(decrypted && decrypted.length > 0) {
-                        currentItems = decrypted;
-                        localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
-                        render(currentItems);
-                        document.getElementById('status-ui').innerText = "🟢 Sincronizado";
-                        document.getElementById('status-ui').style.color = "#4caf50";
-                    }
+                let res = await fetch(API_URL);
+                if(res.ok) {
+                    dados = await res.json();
+                    renderizar();
+                    document.getElementById('status').innerText = "🟢 Sincronizado com Termux do Dru";
+                    document.getElementById('status').style.color = "#4caf50";
                 }
-            } catch(e) { 
-                document.getElementById('status-ui').innerText = "🟡 Nuvem Fora do Ar (Operando Local)"; 
-                document.getElementById('status-ui').style.color = "#D4AF37";
+            } catch(e) {
+                document.getElementById('status').innerText = "🔴 Tentando conectar com Termux...";
+                document.getElementById('status').style.color = "#ff3333";
             }
         }
 
-        function render(items) {
-            const listDiv = document.getElementById('list');
-            listDiv.innerHTML = '';
-            const cats = [...new Set(items.map(i => i.category))];
-            
-            cats.forEach(c => {
-                const html = `<div class="category-title">${c}</div>`;
-                listDiv.insertAdjacentHTML('beforeend', html);
-                
-                items.filter(i => i.category === c).forEach((item) => {
-                    const itemHtml = `
-                    <div class="item ${item.checked ? 'checked' : ''}" onclick="toggleItem('${item.id}')">
-                        <span style="flex: 1; font-weight: 500;">${item.name}</span>
-                        <button onclick="deleteItem('${item.id}'); event.stopPropagation();" style="width:auto; background:none; color:#ff3333; padding: 5px 15px; font-size: 1.2rem; border: none; cursor: pointer;">✖</button>
-                    </div>`;
-                    listDiv.insertAdjacentHTML('beforeend', itemHtml);
+        async function salvarEEnviar(novosDados) {
+            dados = novosDados;
+            renderizar(); 
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
                 });
+            } catch(e) {}
+        }
+
+        function renderizar() {
+            const div = document.getElementById('lista');
+            div.innerHTML = '';
+            dados.forEach((item, index) => {
+                div.innerHTML += `
+                    <div class="item">
+                        <span style="flex:1;"><b>${item.cat}</b><br>${item.nome}</span>
+                        <button class="del" onclick="deletar(${index})">✖</button>
+                    </div>
+                `;
             });
         }
 
-        document.getElementById('add-form').onsubmit = (e) => {
+        document.getElementById('form').onsubmit = (e) => {
             e.preventDefault();
-            const newItem = {
-                id: Date.now().toString(),
-                name: document.getElementById('name').value,
-                category: document.getElementById('cat').value,
-                checked: false
+            let novo = {
+                nome: document.getElementById('nome').value,
+                cat: document.getElementById('cat').value
             };
-            
-            // 1. Salva no array
-            currentItems.push(newItem);
-            
-            // 2. Salva no celular imediatamente (Backup)
-            localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
-            
-            // 3. Atualiza a tela em 1 milissegundo
-            render(currentItems);
-            document.getElementById('name').value = '';
-            
-            // 4. Tenta mandar pra nuvem em segundo plano
-            pushToCloud(currentItems);
+            let novosDados = [...dados, novo];
+            document.getElementById('nome').value = '';
+            salvarEEnviar(novosDados);
         };
 
-        window.toggleItem = (id) => {
-            currentItems = currentItems.map(i => i.id === id ? {...i, checked: !i.checked} : i);
-            localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
-            render(currentItems);
-            pushToCloud(currentItems);
+        window.deletar = (index) => {
+            let novosDados = dados.filter((_, i) => i !== index);
+            salvarEEnviar(novosDados);
         };
 
-        window.deleteItem = (id) => {
-            currentItems = currentItems.filter(i => i.id !== id);
-            localStorage.setItem('vault_db_backup', JSON.stringify(currentItems));
-            render(currentItems);
-            pushToCloud(currentItems);
-        };
+        setInterval(sincronizar, 3000);
+        sincronizar();
     </script>
 </body>
 </html>
