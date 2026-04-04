@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Holding Bar 3.1 | GIGANTE</title>
+    <title>Holding Bar 3.2 | GIGANTE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
@@ -16,7 +16,7 @@
         body { 
             background: var(--bg); color: var(--text); 
             font-family: 'Inter', sans-serif; margin: 0; padding: 0; 
-            font-size: 18px; /* Aumentei a base de tudo */
+            font-size: 18px; 
         }
 
         .container { max-width: 600px; margin: auto; padding: 20px; padding-bottom: 120px; }
@@ -70,13 +70,19 @@
         }
 
         /* PDV - Vendas */
-        .pdv-grid { display: grid; grid-template-columns: 1fr; gap: 15px; } /* Agora é 1 por linha pra ficar maior ainda */
+        .pdv-grid { display: grid; grid-template-columns: 1fr; gap: 15px; } 
         .btn-venda { 
             background: var(--surface); border: 2px solid var(--border); 
             padding: 25px; border-radius: 20px; text-align: center; 
         }
         .btn-venda h4 { margin: 0; font-size: 1.4rem; }
         .btn-venda .val { color: var(--success); font-size: 1.8rem; font-weight: 900; display: block; margin: 10px 0; }
+
+        /* Telas Vazias Anti-Susto */
+        .empty-state {
+            text-align: center; padding: 40px 20px; border: 2px dashed var(--border); 
+            border-radius: 20px; color: var(--text-muted); font-weight: 700; margin-top: 20px;
+        }
 
         /* Menu Inferior GIGANTE */
         .nav { 
@@ -180,7 +186,7 @@
 
         function add() {
             let n = document.getElementById('n').value;
-            if(!n) { alert("DIGITE O NOME!"); return; }
+            if(!n) { alert("DIGITE O NOME DO PRODUTO!"); return; }
             bd.estoque.push({ 
                 nome: n, 
                 custo: Number(document.getElementById('c').value) || 0, 
@@ -189,6 +195,10 @@
                 min: Number(document.getElementById('m').value) || 0 
             });
             document.getElementById('n').value = ''; 
+            document.getElementById('c').value = ''; 
+            document.getElementById('v').value = ''; 
+            document.getElementById('q').value = ''; 
+            document.getElementById('m').value = ''; 
             save();
         }
 
@@ -202,21 +212,39 @@
 
             // Estoque
             let listE = document.getElementById('lista-estoque'); listE.innerHTML = '';
-            bd.estoque.forEach((i, idx) => {
-                listE.innerHTML += `<div class="item-row"><div class="item-info"><b>${i.nome}</b><small>Custo: R$${i.custo}</small></div><div class="qty-box"><button class="btn-qty" onclick="upd(${idx},-1)">-</button><span style="font-weight:900;font-size:1.5rem">${i.qtd}</span><button class="btn-qty" onclick="upd(${idx},1)">+</button></div></div>`;
-            });
+            if(bd.estoque.length === 0) {
+                listE.innerHTML = '<div class="empty-state">Estoque Vazio.<br>Adicione produtos acima.</div>';
+            } else {
+                bd.estoque.forEach((i, idx) => {
+                    listE.innerHTML += `<div class="item-row"><div class="item-info"><b>${i.nome}</b><small>Custo: R$${i.custo}</small></div><div class="qty-box"><button class="btn-qty" onclick="upd(${idx},-1)">-</button><span style="font-weight:900;font-size:1.5rem">${i.qtd}</span><button class="btn-qty" onclick="upd(${idx},1)">+</button></div></div>`;
+                });
+            }
 
             // PDV
             let listP = document.getElementById('grid-pdv'); listP.innerHTML = '';
+            let temVenda = false;
             bd.estoque.forEach((i, idx) => {
-                if(i.venda > 0) listP.innerHTML += `<div class="btn-venda" onclick="sell(${idx})"><h4>${i.nome}</h4><span class="val">R$ ${i.venda.toFixed(2)}</span><small>ESTOQUE: ${i.qtd}</small></div>`;
+                if(i.venda > 0) {
+                    temVenda = true;
+                    listP.innerHTML += `<div class="btn-venda" onclick="sell(${idx})"><h4>${i.nome}</h4><span class="val">R$ ${i.venda.toFixed(2)}</span><small>ESTOQUE: ${i.qtd}</small></div>`;
+                }
             });
+            if(!temVenda) {
+                listP.innerHTML = '<div class="empty-state">Nenhum produto cadastrado com preço de venda.</div>';
+            }
 
             // Compras
             let listC = document.getElementById('lista-compras'); listC.innerHTML = '';
+            let precisaComprar = false;
             bd.estoque.forEach(i => {
-                if(i.min > 0 && i.qtd <= i.min) listC.innerHTML += `<div class="item-row" style="border-left:8px solid var(--warning)"><div><b>${i.nome}</b><br>ABAIXO DO MÍNIMO</div><h2 style="color:var(--warning);margin:0">+${i.min - i.qtd + 1}</h2></div>`;
+                if(i.min > 0 && i.qtd <= i.min) {
+                    precisaComprar = true;
+                    listC.innerHTML += `<div class="item-row" style="border-left:8px solid var(--warning)"><div><b>${i.nome}</b><br>ABAIXO DO MÍNIMO</div><h2 style="color:var(--warning);margin:0">+${i.min - i.qtd + 1}</h2></div>`;
+                }
             });
+            if(!precisaComprar) {
+                listC.innerHTML = '<div class="empty-state" style="color: var(--success);">Tudo certo no estoque!<br>Nenhuma reposição urgente.</div>';
+            }
         }
 
         function upd(i, v) { bd.estoque[i].qtd += v; if(bd.estoque[i].qtd < 0) bd.estoque[i].qtd = 0; save(); }
