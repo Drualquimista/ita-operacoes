@@ -3,102 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Holding Bar | Gestão</title>
+    <title>Holding Bar 3.1 | GIGANTE</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
         :root {
             --bg: #09090b; --surface: #18181b; --border: #3f3f46;
             --gold: #D4AF37; --text: #f4f4f5; --text-muted: #a1a1aa;
             --danger: #ef4444; --success: #22c55e; --warning: #eab308;
         }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        .container { max-width: 500px; margin: auto; padding: 15px; padding-bottom: 100px; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
-        h1 { color: var(--gold); font-size: 1.1rem; font-weight: 800; margin: 0; }
-        #status { font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); }
-        .view { display: none; animation: fadeIn 0.2s ease; }
-        .view.active { display: block; }
+
+        body { 
+            background: var(--bg); color: var(--text); 
+            font-family: 'Inter', sans-serif; margin: 0; padding: 0; 
+            font-size: 18px; /* Aumentei a base de tudo */
+        }
+
+        .container { max-width: 600px; margin: auto; padding: 20px; padding-bottom: 120px; }
+
+        header { border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: var(--gold); font-size: 1.5rem; font-weight: 900; margin: 0; }
+        #status { font-size: 0.9rem; padding: 6px 12px; border-radius: 10px; background: rgba(255,255,255,0.1); font-weight: 700; }
+
+        .view { display: none; }
+        .view.active { display: block; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .card { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .dash-main { text-align: center; border: 1px solid var(--gold); }
-        .dash-main h2 { font-size: 2rem; margin: 5px 0; }
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .dash-sub { padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
-        .dash-sub span { font-size: 0.7rem; color: var(--text-muted); }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; }
-        .btn-gold { background: var(--gold); color: #000; }
-        .item-row { background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .pdv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-venda { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; }
-        .btn-venda h4 { margin: 0; font-size: 0.9rem; }
-        .btn-venda .val { color: var(--success); font-weight: 800; display: block; margin: 5px 0; }
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; border-top: 1px solid var(--border); display: flex; padding: 10px 0; }
-        .nav-btn { flex: 1; background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; padding: 0; }
+
+        /* Dashboard Gigante */
+        .card { background: var(--surface); border: 2px solid var(--border); padding: 25px; border-radius: 20px; margin-bottom: 20px; }
+        .dash-main { border: 2px solid var(--gold); text-align: center; }
+        .dash-main span { font-size: 1rem; color: var(--gold); font-weight: 700; }
+        .dash-main h2 { font-size: 3rem; margin: 10px 0; font-weight: 900; }
+        
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .dash-sub { padding: 20px; background: #222; border-radius: 15px; border: 1px solid var(--border); }
+        .dash-sub h4 { font-size: 1.4rem; margin: 5px 0 0 0; }
+
+        /* Inputs e Botões GIGANTES */
+        input, select { 
+            width: 100%; padding: 20px; margin-bottom: 15px; 
+            background: var(--bg); border: 2px solid var(--border); 
+            border-radius: 15px; color: #fff; font-size: 1.2rem; 
+            box-sizing: border-box; font-family: inherit;
+        }
+        input:focus { border-color: var(--gold); outline: none; }
+        
+        .btn-gold { 
+            background: var(--gold); color: #000; 
+            padding: 25px; border: none; border-radius: 15px; 
+            font-size: 1.3rem; font-weight: 900; width: 100%;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* Lista de Itens com botões fáceis de clicar */
+        .item-row { 
+            background: var(--surface); border: 2px solid var(--border); 
+            padding: 20px; border-radius: 20px; margin-bottom: 15px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .item-info b { font-size: 1.3rem; display: block; margin-bottom: 5px; }
+        .qty-box { display: flex; align-items: center; gap: 20px; }
+        .btn-qty { 
+            background: var(--border); color: #fff; border: none; 
+            width: 55px; height: 55px; border-radius: 15px; 
+            font-size: 2rem; font-weight: 900; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* PDV - Vendas */
+        .pdv-grid { display: grid; grid-template-columns: 1fr; gap: 15px; } /* Agora é 1 por linha pra ficar maior ainda */
+        .btn-venda { 
+            background: var(--surface); border: 2px solid var(--border); 
+            padding: 25px; border-radius: 20px; text-align: center; 
+        }
+        .btn-venda h4 { margin: 0; font-size: 1.4rem; }
+        .btn-venda .val { color: var(--success); font-size: 1.8rem; font-weight: 900; display: block; margin: 10px 0; }
+
+        /* Menu Inferior GIGANTE */
+        .nav { 
+            position: fixed; bottom: 0; width: 100%; 
+            background: #000; border-top: 3px solid var(--border); 
+            display: flex; padding: 15px 0; z-index: 100;
+        }
+        .nav-btn { 
+            flex: 1; background: none; border: none; color: var(--text-muted); 
+            display: flex; flex-direction: column; align-items: center; 
+            font-size: 0.9rem; font-weight: 700; gap: 8px;
+        }
         .nav-btn.active { color: var(--gold); }
+        .nav-icon { font-size: 1.8rem; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header><h1>HOLDING BAR 3.0</h1><div id="status">Buscando...</div></header>
+        <header>
+            <h1>HOLDING GESTÃO</h1>
+            <div id="status">...</div>
+        </header>
 
         <div id="v-dash" class="view active">
-            <div class="card dash-main"><span>Dinheiro em Caixa</span><h2 id="d-caixa">R$ 0,00</h2></div>
+            <div class="card dash-main">
+                <span>CAIXA ATUAL</span>
+                <h2 id="d-caixa">R$ 0,00</h2>
+            </div>
             <div class="dash-grid">
-                <div class="dash-sub"><span>Custo Estoque</span><h4 id="d-custo" style="color:var(--danger)">R$ 0,00</h4></div>
-                <div class="dash-sub"><span>Lucro Estimado</span><h4 id="d-lucro" style="color:var(--success)">R$ 0,00</h4></div>
+                <div class="dash-sub"><span>Custo</span><h4 id="d-custo" style="color:var(--danger)">R$ 0,00</h4></div>
+                <div class="dash-sub"><span>Lucro</span><h4 id="d-lucro" style="color:var(--success)">R$ 0,00</h4></div>
             </div>
         </div>
 
         <div id="v-est" class="view">
             <div class="card">
-                <input type="text" id="n" placeholder="Nome (Ex: Heineken)">
-                <div style="display:flex; gap:5px">
-                    <input type="number" id="c" placeholder="Custo R$">
-                    <input type="number" id="v" placeholder="Venda R$">
-                </div>
-                <div style="display:flex; gap:5px">
-                    <input type="number" id="q" placeholder="Qtd">
-                    <input type="number" id="m" placeholder="Mínimo">
-                </div>
-                <button class="btn-gold" onclick="add()">ADICIONAR ITEM</button>
+                <input type="text" id="n" placeholder="NOME DO PRODUTO">
+                <input type="number" id="c" placeholder="CUSTO (R$)">
+                <input type="number" id="v" placeholder="VENDA (R$)">
+                <input type="number" id="q" placeholder="QTD ATUAL">
+                <input type="number" id="m" placeholder="ESTOQUE MÍNIMO">
+                <button class="btn-gold" onclick="add()">SALVAR NO ESTOQUE</button>
             </div>
             <div id="lista-estoque"></div>
         </div>
 
-        <div id="v-pdv" class="view"><div id="grid-pdv" class="pdv-grid"></div></div>
+        <div id="v-pdv" class="view">
+            <div id="grid-pdv" class="pdv-grid"></div>
+        </div>
 
-        <div id="v-com" class="view"><div id="lista-compras"></div></div>
+        <div id="v-com" class="view">
+            <div id="lista-compras"></div>
+        </div>
 
         <div id="v-cfg" class="view">
             <div class="card">
-                <h3>⚙️ Configurações</h3>
-                <label style="font-size: 0.7rem;">IP do Termux (Tailscale):</label>
-                <input type="text" id="cfg-ip" placeholder="http://100.x.x.x:3000">
-                <button class="btn-gold" onclick="salvarIP()">SALVAR CONEXÃO</button>
+                <h3 style="margin-top:0">CONEXÃO</h3>
+                <input type="text" id="cfg-ip" placeholder="Link do Tailscale">
+                <button class="btn-gold" onclick="salvarIP()">CONECTAR AGORA</button>
             </div>
         </div>
     </div>
 
     <nav class="nav">
-        <button class="nav-btn active" onclick="tab('dash', this)"><span>📊</span>Resumo</button>
-        <button class="nav-btn" onclick="tab('est', this)"><span>📦</span>Estoque</button>
-        <button class="nav-btn" onclick="tab('pdv', this)"><span>💰</span>Vendas</button>
-        <button class="nav-btn" onclick="tab('com', this)"><span>🛒</span>Compras</button>
-        <button class="nav-btn" onclick="tab('cfg', this)"><span>⚙️</span>Config</button>
+        <button class="nav-btn active" onclick="tab('dash', this)"><span class="nav-icon">📊</span>Resumo</button>
+        <button class="nav-btn" onclick="tab('est', this)"><span class="nav-icon">📦</span>Estoque</button>
+        <button class="nav-btn" onclick="tab('pdv', this)"><span class="nav-icon">💰</span>PDV</button>
+        <button class="nav-btn" onclick="tab('com', this)"><span class="nav-icon">🛒</span>Compras</button>
+        <button class="nav-btn" onclick="tab('cfg', this)"><span class="nav-icon">⚙️</span>Config</button>
     </nav>
 
     <script>
-        let api = localStorage.getItem('api') || "http://100.78.40.23:3000/sync";
+        let api = localStorage.getItem('api') || "http://100.78.40.23:3001/sync";
         document.getElementById('cfg-ip').value = api;
         let bd = { estoque: [], caixa: 0 };
-
-        function salvarIP() { 
-            api = document.getElementById('cfg-ip').value; 
-            localStorage.setItem('api', api); 
-            alert("Conexão atualizada!"); 
-            sync(); 
-        }
 
         function tab(t, b) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -115,9 +168,9 @@
                     let d = await r.json(); 
                     bd = d.estoque ? d : { estoque: d, caixa: 0 };
                     render();
-                    document.getElementById('status').innerText = "🟢 Online";
+                    document.getElementById('status').innerText = "🟢 ONLINE";
                 }
-            } catch(e) { document.getElementById('status').innerText = "🔴 Offline"; }
+            } catch(e) { document.getElementById('status').innerText = "🔴 OFFLINE"; }
         }
 
         async function save() {
@@ -126,16 +179,16 @@
         }
 
         function add() {
-            let item = { 
-                nome: document.getElementById('n').value, 
-                custo: Number(document.getElementById('c').value), 
-                venda: Number(document.getElementById('v').value), 
-                qtd: Number(document.getElementById('q').value), 
-                min: Number(document.getElementById('m').value) 
-            };
-            if(!item.nome) return;
-            bd.estoque.push(item);
-            document.getElementById('n').value = ''; document.getElementById('c').value = ''; document.getElementById('v').value = ''; document.getElementById('q').value = ''; document.getElementById('m').value = '';
+            let n = document.getElementById('n').value;
+            if(!n) { alert("DIGITE O NOME!"); return; }
+            bd.estoque.push({ 
+                nome: n, 
+                custo: Number(document.getElementById('c').value) || 0, 
+                venda: Number(document.getElementById('v').value) || 0, 
+                qtd: Number(document.getElementById('q').value) || 0, 
+                min: Number(document.getElementById('m').value) || 0 
+            });
+            document.getElementById('n').value = ''; 
             save();
         }
 
@@ -150,24 +203,25 @@
             // Estoque
             let listE = document.getElementById('lista-estoque'); listE.innerHTML = '';
             bd.estoque.forEach((i, idx) => {
-                listE.innerHTML += `<div class="item-row"><div><b>${i.nome}</b><br><small>${i.qtd} un</small></div><div><button style="width:30px;padding:5px" onclick="upd(${idx},-1)">-</button> ${i.qtd} <button style="width:30px;padding:5px" onclick="upd(${idx},1)">+</button></div></div>`;
+                listE.innerHTML += `<div class="item-row"><div class="item-info"><b>${i.nome}</b><small>Custo: R$${i.custo}</small></div><div class="qty-box"><button class="btn-qty" onclick="upd(${idx},-1)">-</button><span style="font-weight:900;font-size:1.5rem">${i.qtd}</span><button class="btn-qty" onclick="upd(${idx},1)">+</button></div></div>`;
             });
 
             // PDV
             let listP = document.getElementById('grid-pdv'); listP.innerHTML = '';
             bd.estoque.forEach((i, idx) => {
-                if(i.venda > 0) listP.innerHTML += `<div class="btn-venda" onclick="sell(${idx})"><h4>${i.nome}</h4><span class="val">R$ ${i.venda.toFixed(2)}</span><small>${i.qtd} disp.</small></div>`;
+                if(i.venda > 0) listP.innerHTML += `<div class="btn-venda" onclick="sell(${idx})"><h4>${i.nome}</h4><span class="val">R$ ${i.venda.toFixed(2)}</span><small>ESTOQUE: ${i.qtd}</small></div>`;
             });
 
             // Compras
             let listC = document.getElementById('lista-compras'); listC.innerHTML = '';
             bd.estoque.forEach(i => {
-                if(i.min > 0 && i.qtd <= i.min) listC.innerHTML += `<div class="item-row" style="border-left:4px solid var(--warning)"><b>${i.nome}</b> <span>Faltam ${i.min - i.qtd + 1} p/ meta</span></div>`;
+                if(i.min > 0 && i.qtd <= i.min) listC.innerHTML += `<div class="item-row" style="border-left:8px solid var(--warning)"><div><b>${i.nome}</b><br>ABAIXO DO MÍNIMO</div><h2 style="color:var(--warning);margin:0">+${i.min - i.qtd + 1}</h2></div>`;
             });
         }
 
         function upd(i, v) { bd.estoque[i].qtd += v; if(bd.estoque[i].qtd < 0) bd.estoque[i].qtd = 0; save(); }
         function sell(i) { if(bd.estoque[i].qtd > 0) { bd.estoque[i].qtd--; bd.caixa += bd.estoque[i].venda; save(); } }
+        function salvarIP() { api = document.getElementById('cfg-ip').value; localStorage.setItem('api', api); sync(); }
 
         setInterval(sync, 3000); sync();
     </script>
