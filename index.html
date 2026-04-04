@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Holding App | Sistema</title>
+    <title>Bar | Sistema</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         
@@ -11,7 +11,7 @@
             --bg: #09090b; --surface: #18181b; --surface-light: #27272a; --border: #3f3f46;
             --gold: #D4AF37; --gold-hover: #b5952f;
             --text: #f4f4f5; --text-muted: #a1a1aa;
-            --danger: #ef4444; --success: #22c55e; --blue: #3b82f6;
+            --danger: #ef4444; --success: #22c55e; --blue: #3b82f6; --warning: #eab308;
         }
 
         body {
@@ -53,11 +53,11 @@
         input:focus, select:focus { outline: none; border-color: var(--gold); }
         button.btn-primary { width: 100%; padding: 14px; background: var(--gold); color: #000; font-weight: 800; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
         
-        /* Lista de Estoque */
+        /* Lista de Estoque & Compras */
         .item-card { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 10px; }
         .item-card.zerado { opacity: 0.5; border-color: var(--danger); }
-        .item-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .item-title { font-weight: 600; font-size: 1rem; margin: 0; }
+        .item-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        .item-title { font-weight: 600; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
         .item-cat { font-size: 0.7rem; color: var(--text-muted); }
         .item-finances { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; margin-top: 5px;}
         .item-actions { display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 5px 8px; border-radius: 8px; }
@@ -65,6 +65,11 @@
         .btn-icon { background: var(--surface-light); color: var(--text); width: 30px; height: 30px; border-radius: 6px; border: none; font-size: 1.2rem; cursor: pointer; }
         .qty-number { font-weight: 800; font-size: 1rem; min-width: 25px; text-align: center; }
         .btn-del { background: transparent; color: var(--danger); border: none; font-size: 0.8rem; cursor: pointer; }
+
+        /* Badges de Alerta */
+        .badge { font-size: 0.6rem; font-weight: 800; padding: 3px 6px; border-radius: 4px; letter-spacing: 0.5px; }
+        .badge-warning { background: var(--warning); color: #000; }
+        .badge-danger { background: var(--danger); color: #fff; }
 
         /* PDV - Vendas */
         .pdv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -76,9 +81,9 @@
 
         /* Bottom Navigation */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(24, 24, 27, 0.9); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .nav-item { background: transparent; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; width: 33%; font-family: 'Inter', sans-serif;}
+        .nav-item { background: transparent; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; width: 25%; font-family: 'Inter', sans-serif;}
         .nav-item.active { color: var(--gold); font-weight: 800; }
-        .nav-icon { font-size: 1.4rem; }
+        .nav-icon { font-size: 1.3rem; }
     </style>
 </head>
 <body>
@@ -115,7 +120,7 @@
                 <h3 class="box-title">📦 Cadastrar / Comprar Item</h3>
                 <form id="form-estoque">
                     <div class="input-group">
-                        <label>Nome do Produto (Ex: RedBull, Copo Plástico)</label>
+                        <label>Nome do Produto (Ex: RedLabel, Copo)</label>
                         <input type="text" id="nome" required>
                     </div>
                     <div class="input-group">
@@ -129,16 +134,22 @@
                     <div class="input-row">
                         <div class="input-group">
                             <label>Custo Unitário (R$)</label>
-                            <input type="number" id="custo" step="0.01" required placeholder="Ex: 5.00">
+                            <input type="number" id="custo" step="0.01" required placeholder="Ex: 50.00">
                         </div>
                         <div class="input-group">
                             <label>Preço Venda (R$)</label>
                             <input type="number" id="preco_venda" step="0.01" placeholder="Opcional">
                         </div>
                     </div>
-                    <div class="input-group">
-                        <label>Quantidade Comprada</label>
-                        <input type="number" id="qtd" required placeholder="Ex: 24">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Qtd Inicial</label>
+                            <input type="number" id="qtd" required placeholder="Ex: 5">
+                        </div>
+                        <div class="input-group">
+                            <label>Avisar quando chegar em (Estoque Mínimo)</label>
+                            <input type="number" id="min_estoque" placeholder="Ex: 2">
+                        </div>
                     </div>
                     <button type="submit" class="btn-primary">ADCIONAR AO ESTOQUE</button>
                 </form>
@@ -154,6 +165,15 @@
             </div>
             <div id="grid-pdv" class="pdv-grid"></div>
         </main>
+
+        <main id="view-compras" class="view">
+            <div class="box" style="text-align: center; margin-bottom: 20px; border-color: var(--warning);">
+                <h3 style="margin: 0; color: var(--warning);">Lista de Reposição</h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Itens que estão abaixo do estoque mínimo definido</span>
+            </div>
+            <div id="lista-compras"></div>
+        </main>
+
     </div>
 
     <nav class="bottom-nav">
@@ -169,13 +189,16 @@
             <span class="nav-icon">💰</span>
             <span>PDV</span>
         </button>
+        <button class="nav-item" onclick="mudarAba('compras', this)">
+            <span class="nav-icon">🛒</span>
+            <span>Compras</span>
+        </button>
     </nav>
 
     <script>
-        // ======= O SEU LINK DO TERMUX =======
+        // O SEU LINK FIXO DO TAILSCALE TÁ AQUI
         const API_URL = "http://100.78.40.23:3000/sync";
         
-        // Estrutura do Banco de Dados atualizada
         let bd = { estoque: [], caixa: 0 };
 
         function mudarAba(aba, elemento) {
@@ -198,7 +221,6 @@
                 if(res.ok) {
                     let serverData = await res.json();
                     
-                    // Transição caso o Termux ainda tenha o formato antigo (lista simples)
                     if (Array.isArray(serverData)) {
                         bd = { estoque: serverData, caixa: 0 };
                     } else if (serverData.estoque) {
@@ -233,6 +255,7 @@
             renderizarDashboard();
             renderizarEstoque();
             renderizarPDV();
+            renderizarCompras();
         }
 
         function renderizarDashboard() {
@@ -269,15 +292,25 @@
 
             bd.estoque.forEach((item, index) => {
                 let q = Number(item.qtd) || 0;
+                let min = Number(item.min_estoque) || 0;
                 let custo = item.custo ? formatarDinheiro(item.custo) : "R$ 0,00";
                 let venda = item.preco_venda ? formatarDinheiro(item.preco_venda) : "Não Vende";
+                
                 let zerado = q <= 0 ? 'zerado' : '';
+                
+                // Lógica dos Alertas Visuais
+                let badge = '';
+                if(q <= 0) {
+                    badge = '<span class="badge badge-danger">🚨 ZEROU</span>';
+                } else if (min > 0 && q <= min) {
+                    badge = '<span class="badge badge-warning">⚠️ ACABANDO</span>';
+                }
 
                 div.innerHTML += `
                     <div class="item-card ${zerado}">
                         <div class="item-header">
                             <div>
-                                <p class="item-title">${item.nome}</p>
+                                <p class="item-title">${item.nome} ${badge}</p>
                                 <span class="item-cat">${item.cat}</span>
                                 <div class="item-finances">
                                     <span>Custo: ${custo}</span>
@@ -302,7 +335,6 @@
             const grid = document.getElementById('grid-pdv');
             grid.innerHTML = '';
 
-            // Filtra só o que tem preço de venda e tem estoque
             let itensParaVender = bd.estoque.map((item, index) => ({...item, originalIndex: index}))
                                             .filter(i => Number(i.preco_venda) > 0);
 
@@ -325,6 +357,46 @@
             });
         }
 
+        // Nova função que alimenta a aba de Compras
+        function renderizarCompras() {
+            const div = document.getElementById('lista-compras');
+            div.innerHTML = '';
+
+            let precisaComprar = bd.estoque.filter(i => {
+                let min = Number(i.min_estoque) || 0;
+                let q = Number(i.qtd) || 0;
+                return min > 0 && q <= min; // Se tem mínimo definido e o estoque tá igual ou menor
+            });
+
+            if(precisaComprar.length === 0) {
+                div.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Estoque tá safe. Nenhuma compra urgente.</p>';
+                return;
+            }
+
+            precisaComprar.forEach(item => {
+                let q = Number(item.qtd) || 0;
+                let min = Number(item.min_estoque) || 0;
+                let falta = min - q;
+                // Se o cara zerou e o minimo era 2, ele precisa comprar no mínimo 2 pra repor a meta
+                if (falta === 0) falta = 1; // Se empatou no mínimo, sugere comprar pelo menos 1 pra sair do limite
+
+                div.innerHTML += `
+                    <div class="item-card" style="border-left: 4px solid var(--warning);">
+                        <div class="item-header" style="margin-bottom: 0;">
+                            <div>
+                                <p class="item-title">${item.nome}</p>
+                                <span class="item-cat">Atual: ${q} un | Mínimo exigido: ${min} un</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="display: block; font-size: 0.7rem; color: var(--text-muted);">Comprar:</span>
+                                <span style="font-weight: 800; color: var(--gold); font-size: 1.1rem;">+${falta} un</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         window.alterarEstoque = (index, valor) => {
             let atual = Number(bd.estoque[index].qtd) || 0;
             let novaQtd = atual + valor;
@@ -336,8 +408,8 @@
         window.venderProduto = (index) => {
             let item = bd.estoque[index];
             if(item.qtd > 0) {
-                item.qtd -= 1; // Tira 1 do estoque
-                bd.caixa += Number(item.preco_venda); // Põe dinheiro no caixa
+                item.qtd -= 1;
+                bd.caixa += Number(item.preco_venda);
                 salvar();
             }
         };
@@ -349,15 +421,16 @@
                 cat: document.getElementById('cat').value,
                 custo: document.getElementById('custo').value,
                 preco_venda: document.getElementById('preco_venda').value || null,
-                qtd: document.getElementById('qtd').value
+                qtd: document.getElementById('qtd').value,
+                min_estoque: document.getElementById('min_estoque').value || 0
             };
             bd.estoque.push(novo);
             
-            // Limpa form
             document.getElementById('nome').value = '';
             document.getElementById('custo').value = '';
             document.getElementById('preco_venda').value = '';
             document.getElementById('qtd').value = '';
+            document.getElementById('min_estoque').value = '';
             
             salvar();
         };
@@ -375,3 +448,4 @@
 </body>
 </html>
 
+            
