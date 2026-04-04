@@ -3,449 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bar | Sistema</title>
+    <title>Holding Bar | Gestão</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        
         :root {
-            --bg: #09090b; --surface: #18181b; --surface-light: #27272a; --border: #3f3f46;
-            --gold: #D4AF37; --gold-hover: #b5952f;
-            --text: #f4f4f5; --text-muted: #a1a1aa;
-            --danger: #ef4444; --success: #22c55e; --blue: #3b82f6; --warning: #eab308;
+            --bg: #09090b; --surface: #18181b; --border: #3f3f46;
+            --gold: #D4AF37; --text: #f4f4f5; --text-muted: #a1a1aa;
+            --danger: #ef4444; --success: #22c55e; --warning: #eab308;
         }
-
-        body {
-            background-color: var(--bg); color: var(--text);
-            font-family: 'Inter', sans-serif; margin: 0; padding: 0;
-            overflow-x: hidden;
-        }
-
-        .container { max-width: 500px; margin: auto; padding: 15px; padding-bottom: 90px; }
-
-        /* Cabeçalho Global */
-        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        h1 { color: var(--gold); font-weight: 800; font-size: 1.2rem; margin: 0; letter-spacing: 1px; }
-        #status { font-size: 0.7rem; font-weight: 600; padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.1); }
-
-        /* Abas (Views) */
-        .view { display: none; animation: fadeIn 0.3s ease; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        .container { max-width: 500px; margin: auto; padding: 15px; padding-bottom: 100px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+        h1 { color: var(--gold); font-size: 1.1rem; font-weight: 800; margin: 0; }
+        #status { font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); }
+        .view { display: none; animation: fadeIn 0.2s ease; }
         .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Estilos do Dashboard */
-        .card-destaque { background: linear-gradient(135deg, #1f1c0d, #18181b); border: 1px solid var(--gold); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
-        .card-destaque span { font-size: 0.8rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .card-destaque h2 { margin: 5px 0 0 0; font-size: 2.2rem; color: #fff; }
-        
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .dash-card { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; }
-        .dash-card span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-        .dash-card h3 { margin: 5px 0 0 0; font-size: 1.2rem; }
-        .text-danger { color: var(--danger); } .text-success { color: var(--success); } .text-blue { color: var(--blue); }
-
-        /* Estilos de Formulário */
-        .box { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .box-title { margin-top: 0; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
-        .input-group { margin-bottom: 12px; }
-        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        input:focus, select:focus { outline: none; border-color: var(--gold); }
-        button.btn-primary { width: 100%; padding: 14px; background: var(--gold); color: #000; font-weight: 800; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
-        
-        /* Lista de Estoque & Compras */
-        .item-card { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .item-card.zerado { opacity: 0.5; border-color: var(--danger); }
-        .item-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
-        .item-title { font-weight: 600; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
-        .item-cat { font-size: 0.7rem; color: var(--text-muted); }
-        .item-finances { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; margin-top: 5px;}
-        .item-actions { display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 5px 8px; border-radius: 8px; }
-        .qty-controls { display: flex; align-items: center; gap: 10px; }
-        .btn-icon { background: var(--surface-light); color: var(--text); width: 30px; height: 30px; border-radius: 6px; border: none; font-size: 1.2rem; cursor: pointer; }
-        .qty-number { font-weight: 800; font-size: 1rem; min-width: 25px; text-align: center; }
-        .btn-del { background: transparent; color: var(--danger); border: none; font-size: 0.8rem; cursor: pointer; }
-
-        /* Badges de Alerta */
-        .badge { font-size: 0.6rem; font-weight: 800; padding: 3px 6px; border-radius: 4px; letter-spacing: 0.5px; }
-        .badge-warning { background: var(--warning); color: #000; }
-        .badge-danger { background: var(--danger); color: #fff; }
-
-        /* PDV - Vendas */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .dash-main { text-align: center; border: 1px solid var(--gold); }
+        .dash-main h2 { font-size: 2rem; margin: 5px 0; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .dash-sub { padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+        .dash-sub span { font-size: 0.7rem; color: var(--text-muted); }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; }
+        .btn-gold { background: var(--gold); color: #000; }
+        .item-row { background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .pdv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-vender { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .btn-vender:active { transform: scale(0.95); border-color: var(--gold); }
-        .btn-vender h4 { margin: 0 0 5px 0; font-size: 1rem; color: var(--text); }
-        .btn-vender .preco { font-weight: 800; color: var(--success); font-size: 1.1rem; }
-        .btn-vender .estoque { font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; display: block; }
-
-        /* Bottom Navigation */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(24, 24, 27, 0.9); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .nav-item { background: transparent; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; width: 25%; font-family: 'Inter', sans-serif;}
-        .nav-item.active { color: var(--gold); font-weight: 800; }
-        .nav-icon { font-size: 1.3rem; }
+        .btn-venda { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; }
+        .btn-venda h4 { margin: 0; font-size: 0.9rem; }
+        .btn-venda .val { color: var(--success); font-weight: 800; display: block; margin: 5px 0; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; border-top: 1px solid var(--border); display: flex; padding: 10px 0; }
+        .nav-btn { flex: 1; background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; padding: 0; }
+        .nav-btn.active { color: var(--gold); }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <header>
-            <h1>HOLDING BAR</h1>
-            <div id="status">Buscando Servidor...</div>
-        </header>
+        <header><h1>HOLDING BAR 3.0</h1><div id="status">Buscando...</div></header>
 
-        <main id="view-dash" class="view active">
-            <div class="card-destaque">
-                <span>Dinheiro em Caixa (Vendas)</span>
-                <h2 id="dash-caixa">R$ 0,00</h2>
-            </div>
+        <div id="v-dash" class="view active">
+            <div class="card dash-main"><span>Dinheiro em Caixa</span><h2 id="d-caixa">R$ 0,00</h2></div>
             <div class="dash-grid">
-                <div class="dash-card">
-                    <span>Custo do Estoque</span>
-                    <h3 id="dash-custo" class="text-danger">R$ 0,00</h3>
-                </div>
-                <div class="dash-card">
-                    <span>Lucro Potencial</span>
-                    <h3 id="dash-lucro" class="text-success">R$ 0,00</h3>
-                </div>
-                <div class="dash-card">
-                    <span>Itens Físicos</span>
-                    <h3 id="dash-itens" class="text-blue">0 un</h3>
-                </div>
+                <div class="dash-sub"><span>Custo Estoque</span><h4 id="d-custo" style="color:var(--danger)">R$ 0,00</h4></div>
+                <div class="dash-sub"><span>Lucro Estimado</span><h4 id="d-lucro" style="color:var(--success)">R$ 0,00</h4></div>
             </div>
-        </main>
+        </div>
 
-        <main id="view-estoque" class="view">
-            <div class="box">
-                <h3 class="box-title">📦 Cadastrar / Comprar Item</h3>
-                <form id="form-estoque">
-                    <div class="input-group">
-                        <label>Nome do Produto (Ex: RedLabel, Copo)</label>
-                        <input type="text" id="nome" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Categoria</label>
-                        <select id="cat">
-                            <option>🍻 Bebidas pra Venda</option>
-                            <option>🧊 Insumos (Gelo, Fruta, Xarope)</option>
-                            <option>🍸 Vidraria & Estrutura</option>
-                        </select>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label>Custo Unitário (R$)</label>
-                            <input type="number" id="custo" step="0.01" required placeholder="Ex: 50.00">
-                        </div>
-                        <div class="input-group">
-                            <label>Preço Venda (R$)</label>
-                            <input type="number" id="preco_venda" step="0.01" placeholder="Opcional">
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label>Qtd Inicial</label>
-                            <input type="number" id="qtd" required placeholder="Ex: 5">
-                        </div>
-                        <div class="input-group">
-                            <label>Avisar quando chegar em (Estoque Mínimo)</label>
-                            <input type="number" id="min_estoque" placeholder="Ex: 2">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary">ADCIONAR AO ESTOQUE</button>
-                </form>
+        <div id="v-est" class="view">
+            <div class="card">
+                <input type="text" id="n" placeholder="Nome (Ex: Heineken)">
+                <div style="display:flex; gap:5px">
+                    <input type="number" id="c" placeholder="Custo R$">
+                    <input type="number" id="v" placeholder="Venda R$">
+                </div>
+                <div style="display:flex; gap:5px">
+                    <input type="number" id="q" placeholder="Qtd">
+                    <input type="number" id="m" placeholder="Mínimo">
+                </div>
+                <button class="btn-gold" onclick="add()">ADICIONAR ITEM</button>
             </div>
-            
-            <h3 style="font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Inventário Físico</h3>
             <div id="lista-estoque"></div>
-        </main>
+        </div>
 
-        <main id="view-vendas" class="view">
-            <div class="box" style="text-align: center; margin-bottom: 20px;">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Toque para registrar uma venda</span>
+        <div id="v-pdv" class="view"><div id="grid-pdv" class="pdv-grid"></div></div>
+
+        <div id="v-com" class="view"><div id="lista-compras"></div></div>
+
+        <div id="v-cfg" class="view">
+            <div class="card">
+                <h3>⚙️ Configurações</h3>
+                <label style="font-size: 0.7rem;">IP do Termux (Tailscale):</label>
+                <input type="text" id="cfg-ip" placeholder="http://100.x.x.x:3000">
+                <button class="btn-gold" onclick="salvarIP()">SALVAR CONEXÃO</button>
             </div>
-            <div id="grid-pdv" class="pdv-grid"></div>
-        </main>
-
-        <main id="view-compras" class="view">
-            <div class="box" style="text-align: center; margin-bottom: 20px; border-color: var(--warning);">
-                <h3 style="margin: 0; color: var(--warning);">Lista de Reposição</h3>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Itens que estão abaixo do estoque mínimo definido</span>
-            </div>
-            <div id="lista-compras"></div>
-        </main>
-
+        </div>
     </div>
 
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="mudarAba('dash', this)">
-            <span class="nav-icon">📊</span>
-            <span>Resumo</span>
-        </button>
-        <button class="nav-item" onclick="mudarAba('estoque', this)">
-            <span class="nav-icon">📦</span>
-            <span>Estoque</span>
-        </button>
-        <button class="nav-item" onclick="mudarAba('vendas', this)">
-            <span class="nav-icon">💰</span>
-            <span>PDV</span>
-        </button>
-        <button class="nav-item" onclick="mudarAba('compras', this)">
-            <span class="nav-icon">🛒</span>
-            <span>Compras</span>
-        </button>
+    <nav class="nav">
+        <button class="nav-btn active" onclick="tab('dash', this)"><span>📊</span>Resumo</button>
+        <button class="nav-btn" onclick="tab('est', this)"><span>📦</span>Estoque</button>
+        <button class="nav-btn" onclick="tab('pdv', this)"><span>💰</span>Vendas</button>
+        <button class="nav-btn" onclick="tab('com', this)"><span>🛒</span>Compras</button>
+        <button class="nav-btn" onclick="tab('cfg', this)"><span>⚙️</span>Config</button>
     </nav>
 
     <script>
-        // O SEU LINK FIXO DO TAILSCALE TÁ AQUI
-        const API_URL = "http://100.78.40.23:3001/sync";
-        
+        let api = localStorage.getItem('api') || "http://100.78.40.23:3000/sync";
+        document.getElementById('cfg-ip').value = api;
         let bd = { estoque: [], caixa: 0 };
 
-        function mudarAba(aba, elemento) {
+        function salvarIP() { 
+            api = document.getElementById('cfg-ip').value; 
+            localStorage.setItem('api', api); 
+            alert("Conexão atualizada!"); 
+            sync(); 
+        }
+
+        function tab(t, b) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + aba).classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            elemento.classList.add('active');
-            
-            renderizarTelas();
+            document.getElementById('v-'+t).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+            b.classList.add('active');
+            render();
         }
 
-        function formatarDinheiro(valor) {
-            return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        async function sincronizar() {
+        async function sync() {
             try {
-                let res = await fetch(API_URL);
-                if(res.ok) {
-                    let serverData = await res.json();
-                    
-                    if (Array.isArray(serverData)) {
-                        bd = { estoque: serverData, caixa: 0 };
-                    } else if (serverData.estoque) {
-                        bd = serverData;
-                    }
-
-                    renderizarTelas();
-                    setStatus("🟢 Online", "#22c55e", "rgba(34, 197, 94, 0.1)");
+                let r = await fetch(api);
+                if(r.ok) { 
+                    let d = await r.json(); 
+                    bd = d.estoque ? d : { estoque: d, caixa: 0 };
+                    render();
+                    document.getElementById('status').innerText = "🟢 Online";
                 }
-            } catch(e) {
-                setStatus("🔴 Offline...", "#ef4444", "rgba(239, 68, 68, 0.1)");
-            }
+            } catch(e) { document.getElementById('status').innerText = "🔴 Offline"; }
         }
 
-        function setStatus(texto, cor, bg) {
-            const st = document.getElementById('status');
-            st.innerText = texto; st.style.color = cor; st.style.backgroundColor = bg;
+        async function save() {
+            render();
+            try { await fetch(api, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(bd) }); } catch(e) {}
         }
 
-        async function salvar() {
-            renderizarTelas(); 
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bd)
-                });
-            } catch(e) {}
-        }
-
-        function renderizarTelas() {
-            renderizarDashboard();
-            renderizarEstoque();
-            renderizarPDV();
-            renderizarCompras();
-        }
-
-        function renderizarDashboard() {
-            let custoTotal = 0;
-            let lucroPotencial = 0;
-            let itensFisicos = 0;
-
-            bd.estoque.forEach(item => {
-                let q = Number(item.qtd) || 0;
-                let custo = Number(item.custo) || 0;
-                let venda = Number(item.preco_venda) || 0;
-                
-                itensFisicos += q;
-                custoTotal += (q * custo);
-                if(venda > 0) {
-                    lucroPotencial += (q * (venda - custo));
-                }
-            });
-
-            document.getElementById('dash-caixa').innerText = formatarDinheiro(bd.caixa || 0);
-            document.getElementById('dash-custo').innerText = formatarDinheiro(custoTotal);
-            document.getElementById('dash-lucro').innerText = formatarDinheiro(lucroPotencial);
-            document.getElementById('dash-itens').innerText = itensFisicos + " un";
-        }
-
-        function renderizarEstoque() {
-            const div = document.getElementById('lista-estoque');
-            div.innerHTML = '';
-            
-            if(bd.estoque.length === 0) {
-                div.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Nenhum item cadastrado.</p>';
-                return;
-            }
-
-            bd.estoque.forEach((item, index) => {
-                let q = Number(item.qtd) || 0;
-                let min = Number(item.min_estoque) || 0;
-                let custo = item.custo ? formatarDinheiro(item.custo) : "R$ 0,00";
-                let venda = item.preco_venda ? formatarDinheiro(item.preco_venda) : "Não Vende";
-                
-                let zerado = q <= 0 ? 'zerado' : '';
-                
-                // Lógica dos Alertas Visuais
-                let badge = '';
-                if(q <= 0) {
-                    badge = '<span class="badge badge-danger">🚨 ZEROU</span>';
-                } else if (min > 0 && q <= min) {
-                    badge = '<span class="badge badge-warning">⚠️ ACABANDO</span>';
-                }
-
-                div.innerHTML += `
-                    <div class="item-card ${zerado}">
-                        <div class="item-header">
-                            <div>
-                                <p class="item-title">${item.nome} ${badge}</p>
-                                <span class="item-cat">${item.cat}</span>
-                                <div class="item-finances">
-                                    <span>Custo: ${custo}</span>
-                                    <span style="color:var(--gold)">Venda: ${venda}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item-actions">
-                            <div class="qty-controls">
-                                <button class="btn-icon" onclick="alterarEstoque(${index}, -1)">-</button>
-                                <span class="qty-number">${q}</span>
-                                <button class="btn-icon" onclick="alterarEstoque(${index}, 1)">+</button>
-                            </div>
-                            <button class="btn-del" onclick="deletar(${index})">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderizarPDV() {
-            const grid = document.getElementById('grid-pdv');
-            grid.innerHTML = '';
-
-            let itensParaVender = bd.estoque.map((item, index) => ({...item, originalIndex: index}))
-                                            .filter(i => Number(i.preco_venda) > 0);
-
-            if(itensParaVender.length === 0) {
-                grid.innerHTML = '<p style="grid-column: span 2; text-align:center; color:var(--text-muted);">Nenhum produto cadastrado com Preço de Venda.</p>';
-                return;
-            }
-
-            itensParaVender.forEach(item => {
-                let q = Number(item.qtd) || 0;
-                let opacidade = q <= 0 ? 'opacity: 0.4; pointer-events: none;' : '';
-                
-                grid.innerHTML += `
-                    <div class="btn-vender" style="${opacidade}" onclick="venderProduto(${item.originalIndex})">
-                        <h4>${item.nome}</h4>
-                        <span class="preco">${formatarDinheiro(item.preco_venda)}</span>
-                        <span class="estoque">${q} disp.</span>
-                    </div>
-                `;
-            });
-        }
-
-        // Nova função que alimenta a aba de Compras
-        function renderizarCompras() {
-            const div = document.getElementById('lista-compras');
-            div.innerHTML = '';
-
-            let precisaComprar = bd.estoque.filter(i => {
-                let min = Number(i.min_estoque) || 0;
-                let q = Number(i.qtd) || 0;
-                return min > 0 && q <= min; // Se tem mínimo definido e o estoque tá igual ou menor
-            });
-
-            if(precisaComprar.length === 0) {
-                div.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Estoque tá safe. Nenhuma compra urgente.</p>';
-                return;
-            }
-
-            precisaComprar.forEach(item => {
-                let q = Number(item.qtd) || 0;
-                let min = Number(item.min_estoque) || 0;
-                let falta = min - q;
-                // Se o cara zerou e o minimo era 2, ele precisa comprar no mínimo 2 pra repor a meta
-                if (falta === 0) falta = 1; // Se empatou no mínimo, sugere comprar pelo menos 1 pra sair do limite
-
-                div.innerHTML += `
-                    <div class="item-card" style="border-left: 4px solid var(--warning);">
-                        <div class="item-header" style="margin-bottom: 0;">
-                            <div>
-                                <p class="item-title">${item.nome}</p>
-                                <span class="item-cat">Atual: ${q} un | Mínimo exigido: ${min} un</span>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="display: block; font-size: 0.7rem; color: var(--text-muted);">Comprar:</span>
-                                <span style="font-weight: 800; color: var(--gold); font-size: 1.1rem;">+${falta} un</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        window.alterarEstoque = (index, valor) => {
-            let atual = Number(bd.estoque[index].qtd) || 0;
-            let novaQtd = atual + valor;
-            if (novaQtd < 0) novaQtd = 0;
-            bd.estoque[index].qtd = novaQtd;
-            salvar();
-        };
-
-        window.venderProduto = (index) => {
-            let item = bd.estoque[index];
-            if(item.qtd > 0) {
-                item.qtd -= 1;
-                bd.caixa += Number(item.preco_venda);
-                salvar();
-            }
-        };
-
-        document.getElementById('form-estoque').onsubmit = (e) => {
-            e.preventDefault();
-            let novo = {
-                nome: document.getElementById('nome').value,
-                cat: document.getElementById('cat').value,
-                custo: document.getElementById('custo').value,
-                preco_venda: document.getElementById('preco_venda').value || null,
-                qtd: document.getElementById('qtd').value,
-                min_estoque: document.getElementById('min_estoque').value || 0
+        function add() {
+            let item = { 
+                nome: document.getElementById('n').value, 
+                custo: Number(document.getElementById('c').value), 
+                venda: Number(document.getElementById('v').value), 
+                qtd: Number(document.getElementById('q').value), 
+                min: Number(document.getElementById('m').value) 
             };
-            bd.estoque.push(novo);
-            
-            document.getElementById('nome').value = '';
-            document.getElementById('custo').value = '';
-            document.getElementById('preco_venda').value = '';
-            document.getElementById('qtd').value = '';
-            document.getElementById('min_estoque').value = '';
-            
-            salvar();
-        };
+            if(!item.nome) return;
+            bd.estoque.push(item);
+            document.getElementById('n').value = ''; document.getElementById('c').value = ''; document.getElementById('v').value = ''; document.getElementById('q').value = ''; document.getElementById('m').value = '';
+            save();
+        }
 
-        window.deletar = (index) => {
-            if(confirm("Deseja mesmo apagar este item?")) {
-                bd.estoque.splice(index, 1);
-                salvar();
-            }
-        };
+        function render() {
+            // Dashboard
+            let cTotal = 0, lTotal = 0;
+            bd.estoque.forEach(i => { cTotal += (i.qtd * i.custo); if(i.venda > 0) lTotal += (i.qtd * (i.venda - i.custo)); });
+            document.getElementById('d-caixa').innerText = "R$ " + bd.caixa.toFixed(2);
+            document.getElementById('d-custo').innerText = "R$ " + cTotal.toFixed(2);
+            document.getElementById('d-lucro').innerText = "R$ " + lTotal.toFixed(2);
 
-        setInterval(sincronizar, 3000);
-        sincronizar();
+            // Estoque
+            let listE = document.getElementById('lista-estoque'); listE.innerHTML = '';
+            bd.estoque.forEach((i, idx) => {
+                listE.innerHTML += `<div class="item-row"><div><b>${i.nome}</b><br><small>${i.qtd} un</small></div><div><button style="width:30px;padding:5px" onclick="upd(${idx},-1)">-</button> ${i.qtd} <button style="width:30px;padding:5px" onclick="upd(${idx},1)">+</button></div></div>`;
+            });
+
+            // PDV
+            let listP = document.getElementById('grid-pdv'); listP.innerHTML = '';
+            bd.estoque.forEach((i, idx) => {
+                if(i.venda > 0) listP.innerHTML += `<div class="btn-venda" onclick="sell(${idx})"><h4>${i.nome}</h4><span class="val">R$ ${i.venda.toFixed(2)}</span><small>${i.qtd} disp.</small></div>`;
+            });
+
+            // Compras
+            let listC = document.getElementById('lista-compras'); listC.innerHTML = '';
+            bd.estoque.forEach(i => {
+                if(i.min > 0 && i.qtd <= i.min) listC.innerHTML += `<div class="item-row" style="border-left:4px solid var(--warning)"><b>${i.nome}</b> <span>Faltam ${i.min - i.qtd + 1} p/ meta</span></div>`;
+            });
+        }
+
+        function upd(i, v) { bd.estoque[i].qtd += v; if(bd.estoque[i].qtd < 0) bd.estoque[i].qtd = 0; save(); }
+        function sell(i) { if(bd.estoque[i].qtd > 0) { bd.estoque[i].qtd--; bd.caixa += bd.estoque[i].venda; save(); } }
+
+        setInterval(sync, 3000); sync();
     </script>
 </body>
 </html>
-
-            
